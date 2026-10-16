@@ -19,7 +19,7 @@ Ne jamais faire `pip install` à la main.
 ## Données
 
 Les données sont dans `Data/` (pas sur git, trop lourd).
-Télécharger le fichier `.pgn.zst` sur [database.lichess.org](https://database.lichess.org/) et le mettre dans `Data/`.
+Télécharger le fichier `.pgn.zst` ce [la](https://database.lichess.org/standard/lichess_db_standard_rated_2026-09.pgn.zst) sur [database.lichess.org](https://database.lichess.org/) et le mettre dans `Data/`.
 
 ## Organisation du repo
 
