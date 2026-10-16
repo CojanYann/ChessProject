@@ -20,7 +20,7 @@ uv, Python 3.14, polars 2.0, pyarrow, zstandard ; ipykernel en dev. `uv run ...`
   ≈ 24h du 1er sept., filtrées 180+0 / 180+2 → 557k parties).
 
 ## Code
-- `notebooks/pgn.py` : `open_pgn`, `read_games(path, n_read, time_controls)` -> DataFrame (en-têtes, Elo int, `moves`, `n_moves`).
+- `src/utils/pgn.py` : `open_pgn`, `read_games(path, n_read, time_controls)` -> DataFrame (en-têtes, Elo int, `moves`, `n_moves`).
 - `notebooks/01_exploration.ipynb` : structure du fichier.
 - `notebooks/02_preparation.ipynb` : choix cadence + seuil de coups minimum.
 
