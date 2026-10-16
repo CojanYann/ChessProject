@@ -1,0 +1,16 @@
+[project]
+name = "chessproject"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "polars>=2.0.0",
+    "pyarrow>=26.0.0",
+    "zstandard>=0.25.0",
+]
+
+[dependency-groups]
+dev = [
+    "ipykernel>=7.4.0",
+]
