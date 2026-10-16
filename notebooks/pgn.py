@@ -33,17 +33,23 @@ def read_games(path, n_read, time_controls=None):
 
 
 def to_dataframe(games):
-    """Liste de dicts -> DataFrame avec Elo en entiers et `moves` (liste des coups SAN)."""
+    """Liste de dicts -> DataFrame : tous les en-têtes, Elo en entiers,
+    `moves` = liste de {san, clk, eval} (eval = null si absente)."""
+    move = pl.element()  # un coup brut, ex. "1. e4 { [%eval 0.17] [%clk 0:03:00] }"
     return (
-        pl.DataFrame(games)
+        pl.DataFrame(games, infer_schema_length=None)  # None : garde aussi les en-têtes rares
         .with_columns(
             pl.col("WhiteElo", "BlackElo", "WhiteRatingDiff", "BlackRatingDiff").cast(pl.Int32, strict=False),
             moves=pl.col("Movetext")
-            .str.replace_all(r"\{[^}]*\}", "")  # commentaires {...}
-            .str.replace_all(r"\d+\.+", "")  # numéros "1." / "1..."
-            .str.replace_all(r"(1-0|0-1|1/2-1/2|\*)\s*$", "")  # résultat final
-            .str.split(" ")
-            .list.eval(pl.element().filter(pl.element() != "")),
+            .str.extract_all(r"\d+\.+ [^ {]+(?: \{[^}]*\})*")  # numéro + coup + commentaires (0, 1 ou plus)
+            .list.eval(
+                pl.struct(
+                    san=move.str.extract(r"\d+\.+ ([^ {]+)", 1),
+                    clk=move.str.extract(r"%clk ([\d:]+)", 1),
+                    eval=move.str.extract(r"%eval ([^\]\s]+)", 1),
+                )
+            ),
         )
         .with_columns(n_moves=pl.col("moves").list.len())
+        .drop("Movetext")  # tout est maintenant dans `moves`
     )
