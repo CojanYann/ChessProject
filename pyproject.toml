@@ -10,6 +10,8 @@ dependencies = [
     "plotly>=7.1.0",
     "polars>=2.0.0",
     "pyarrow>=26.0.0",
+    "python-chess>=1.999",
+    "scikit-learn>=1.9.1",
     "zstandard>=0.25.0",
 ]
 
