@@ -13,10 +13,10 @@ class Move():
         self.castling = ''
         self.promotion = ''
         
-        self.eval = ''
+        self.score = ''
 
     def __str__(self):
-        return f'{self.piece}{self.capture}{self.col}{self.row}{self.check}{self.checkmate}{self.castling}{self.promotion}{self.eval}'
+        return f'{self.castling}{self.piece}{self.capture}{self.col}{self.row}{self.promotion}{self.check}{self.checkmate}{self.eval}'
 
     @staticmethod
     def parse(move:str):
