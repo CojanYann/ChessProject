@@ -10,3 +10,9 @@ wheels/
 .venv
 # Data (28 Go PGN + parquets générés)
 Data/
+lichess_db_standard_rated_2026-09.pgn.zst
+pyproject.toml
+uv.lock
+.vscode/tasks.json
+pyproject.toml
+uv.lock
