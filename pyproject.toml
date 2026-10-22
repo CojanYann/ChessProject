@@ -14,3 +14,4 @@ dependencies = [
 dev = [
     "ipykernel>=7.4.0",
 ]
+

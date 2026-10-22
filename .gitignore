@@ -8,6 +8,5 @@ wheels/
 
 # Virtual environments
 .venv
-/notebookyann
 # Data (28 Go PGN + parquets générés)
 Data/
