@@ -33,12 +33,16 @@ def read_games(path, n_read, time_controls=None):
 
 
 def to_dataframe(games):
-    """Liste de dicts -> DataFrame : tous les en-têtes, Elo en entiers,
+    """Liste de dicts -> DataFrame (voir `parse_moves`)."""
+    return parse_moves(pl.DataFrame(games, infer_schema_length=None))  # None : garde aussi les en-têtes rares
+
+
+def parse_moves(df):
+    """DataFrame avec `Movetext` brut -> Elo en entiers,
     `moves` = liste de {san, clk, eval} (eval = null si absente)."""
     move = pl.element()  # un coup brut, ex. "1. e4 { [%eval 0.17] [%clk 0:03:00] }"
     return (
-        pl.DataFrame(games, infer_schema_length=None)  # None : garde aussi les en-têtes rares
-        .with_columns(
+        df.with_columns(
             pl.col("WhiteElo", "BlackElo", "WhiteRatingDiff", "BlackRatingDiff").cast(pl.Int32, strict=False),
             moves=pl.col("Movetext")
             .str.extract_all(r"\d+\.+ [^ {]+(?: \{[^}]*\})*")  # numéro + coup + commentaires (0, 1 ou plus)
