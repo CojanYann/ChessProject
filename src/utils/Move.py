@@ -12,20 +12,31 @@ class Move():
         self.checkmate = ''
         self.castling = ''
         self.promotion = ''
-        
+
+        # Turn indicator ("w" for white, "b" for black) TODO
+        self.turn = ''
+
+        # Score for the move (only for evaluated party (approx 3% of games))
+        self.appreciation = '' # ?! or ?? or ? or ! or !! based on the evaluation of the move
         self.score = ''
 
     def __str__(self):
-        return f'{self.castling}{self.piece}{self.capture}{self.col}{self.row}{self.promotion}{self.check}{self.checkmate}{self.eval}'
+        return f'{self.castling}{self.piece}{self.capture}{self.col}{self.row}{self.promotion}{self.check}{self.checkmate}{self.appreciation}'
+
+    @property
+    def to_square(self):
+        return (self.col, self.row)
 
     @staticmethod
     def parse(move:str):
         notation = move.strip()
+        base = notation.rstrip('!?')
         result = Move()
+        result.appreciation = notation[len(base):]
 
-        castling = re.fullmatch(r'(?:O-O-O|O-O|0-0-0|0-0)([+#])?', notation)
+        castling = re.fullmatch(r'(?:O-O-O|O-O|0-0-0|0-0)([+#])?', base)
         if castling:
-            result.castling = notation[:-1] if castling.group(1) else notation
+            result.castling = base[:-1] if castling.group(1) else base
             result.castling = result.castling.replace('0', 'O')
             if castling.group(1) == '+':
                 result.check = '+'
@@ -39,7 +50,7 @@ class Move():
             r'(?P<piece>[KQRBN])?(?P<origin>[a-h][1-8]?|[1-8])?'
             r'(?P<capture>x)?(?P<col>[a-h])(?P<row>[1-8])'
             r'(?P<promotion>=?[QRBN])?(?P<suffix>[+#])?',
-            notation,
+            base,
         )
         if not match:
             raise ValueError(f'Invalid chess move notation: {move!r}')
