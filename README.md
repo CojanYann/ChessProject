@@ -10,6 +10,10 @@ Prédire l'Elo d'un joueur à partir des coups de ses parties (données Lichess)
    uv sync
    ```
    Ça crée le `.venv` et installe tout (Python 3.14, polars, ...) d'après `uv.lock`.
+   Le projet lui-même est installé en **mode éditable** : le code de `src/` s'importe partout
+   (`from utils.pgn import read_games`) et chaque modif de `src/` est prise en compte sans réinstaller
+   (dans un notebook : redémarrer le kernel).
+   Si l'import ne marche pas : `uv pip install -e .` (équivalent manuel, mais `uv sync` suffit normalement).
 3. Lancer un script : `uv run python mon_script.py`.
    Pour les notebooks, choisir le kernel `.venv` dans VS Code / Jupyter.
 
@@ -19,7 +23,13 @@ Ne jamais faire `pip install` à la main.
 ## Données
 
 Les données sont dans `Data/` (pas sur git, trop lourd).
-Télécharger le fichier `.pgn.zst` ce [la](https://database.lichess.org/standard/lichess_db_standard_rated_2026-09.pgn.zst) sur [database.lichess.org](https://database.lichess.org/) et le mettre dans `Data/`.
+Lancer `notebooks/00_extraction.ipynb` :
+- s'il n'est pas déjà dans `Data/`, il télécharge le [fichier PGN de septembre 2026](https://database.lichess.org/standard/lichess_db_standard_rated_2026-09.pgn.zst)
+  depuis [database.lichess.org](https://database.lichess.org/) — ⚠️ **~28 Go** (long, et 28 Go de disque libres) ;
+- puis il crée `Data/blitz_180_raw.parquet` (~4 min), utilisé par les autres notebooks.
+
+Ordre des notebooks : `00_extraction` → `01_exploration` (nettoyage, crée `blitz_180_joueurs.parquet`)
+→ `02_preparation` → `03_features` (crée `blitz_180_features.parquet`).
 
 ## Organisation du repo
 
