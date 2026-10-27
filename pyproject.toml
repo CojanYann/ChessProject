@@ -13,6 +13,7 @@ dependencies = [
     "pyarrow>=26.0.0",
     "python-chess>=1.999",
     "scikit-learn>=1.9.1",
+    "tqdm>=4.70.1",
     "zstandard>=0.25.0",
 ]
 
