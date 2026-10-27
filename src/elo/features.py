@@ -1,7 +1,9 @@
-"""Features par joueur-partie, calculées avec Polars à partir de la table `blitz_180_joueurs` (notebook 01).
-Uniquement les coups du joueur (`san`, `clk`) : les coups adverses renseignent sur le niveau adverse (fuite)."""
+"""Étape 3 : features par joueur-partie, calculées avec Polars à partir de `blitz_180_joueurs` (détails : notebook 03).
+Uniquement les coups du joueur (`san`, `clk`) car les coups adverses renseignent sur le niveau adverse (fuite)."""
 
 import polars as pl
+
+from elo import config
 
 SAN = pl.col("san")
 CLK = pl.col("clk")
@@ -86,3 +88,9 @@ def calcule_features(joueurs):
             **PENDULE, **COUPS, **OUVERTURE,
         )
     )
+
+
+def main():
+    feats = calcule_features(pl.read_parquet(config.JOUEURS))
+    feats.write_parquet(config.FEATURES)
+    print(f"{feats.height} lignes, {feats.width - 3} features -> {config.FEATURES.name}")

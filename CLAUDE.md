@@ -1,7 +1,12 @@
 # ChessProject — prédire l'Elo à partir des coups
 
-Projet ML (cours KIT DS, Télécom Paris). But = **apprendre** plus qu'avoir le meilleur modèle.
-Cible : Elo de chaque joueur (1 ligne par joueur et par partie).
+Projet ML (cours KIT DS, Télécom Paris). Cible : Elo de chaque joueur (1 ligne par joueur et par partie).
+
+## Priorité n°1 : que les étudiants comprennent et apprennent
+Le plus important est que les étudiants du projet **comprennent** ce qui est fait et **apprennent**, bien avant la
+performance du modèle et tout le reste. Concrètement : expliquer chaque choix et chaque concept simplement (avec un
+exemple), privilégier le code lisible au code astucieux, montrer les erreurs et les fausses bonnes idées (et pourquoi),
+répondre aux questions avant d'avancer. Un gain de MAE qu'ils ne comprennent pas ne vaut rien.
 
 ## Préférences
 - Français. **Très simple**, pas à pas, notebooks courts, pas d'overengineering ; supprimer l'inutile en mettant à jour.
@@ -24,14 +29,14 @@ uv, Python 3.14, polars 2.0, pyarrow, zstandard, matplotlib, plotly ; ipykernel 
   (`couleur, cadence, fin, premier_coup, eco_lettre`).
 
 ## Code
-Projet installé en éditable (`[build-system]` setuptools, `uv sync`) : `from utils.pgn import ...` partout.
-- `src/utils/pgn.py` : `download_pgn(url, path)` (00 le lance si le PGN manque), `open_pgn`, `read_games(path, n_read, time_controls)` -> DataFrame (en-têtes, Elo int, `moves`, `n_moves`) ;
-  `parse_moves(df)` : `Movetext` brut -> `moves` = liste de {san, clk, eval}.
-- `src/utils/features.py` : `ajoute_temps`, `ajoute_fin`, dicts d'expressions `PENDULE`, `COUPS`, `OUVERTURE`, `calcule_features(joueurs)`.
-- `notebooks/00_extraction.ipynb` : PGN -> `blitz_180_raw.parquet`.
-- `notebooks/01_exploration.ipynb` : nettoyage + 1 ligne/joueur + exploration vs Elo -> `blitz_180_joueurs.parquet`.
-- `notebooks/02_preparation.ipynb` : choix cadence + seuil de coups minimum.
-- `notebooks/03_features.ipynb` : features par famille, lien avec l'Elo, redondance -> `blitz_180_features.parquet`.
+Projet installé en éditable (`[build-system]` setuptools, `uv sync`). Pipeline : `uv run python -m elo <étape>|tout`
+(~4 min) ; README = rapport avec graphes (`figures/`), `TODO.md` = tâches.
+- `src/elo/` : `config.py` (chemins, seuils), `extraction.py`, `nettoyage.py` (filtre_parties, une_ligne_par_joueur,
+  filtre_joueurs), `features.py` (PENDULE, COUPS, OUVERTURE, calcule_features), `modeles.py` (charge, split,
+  lineaire, boosting, scores, importance_permutation), `figures.py` (PNG du README), `__main__.py` (argparse).
+- `src/utils/` : `pgn.py` (download_pgn, open_pgn, read_games, parse_moves), `Move.py` + `chessboard.py` (collègue).
+- Notebooks 00-04 = analyse détaillée ; 03 et 04 importent `elo.features` / `elo.modeles` ; 01 garde son code
+  pas à pas (miroir de `nettoyage.py`). Notebooks générés via scripts dans le scratchpad (ne pas régénérer à l'aveugle).
 
 ## Stratégie (feuille de route)
 Polars pour tout le tabulaire/texte/pendule ; python-chess seulement pour features d'échiquier, sur données déjà filtrées.
@@ -40,7 +45,7 @@ Polars pour tout le tabulaire/texte/pendule ; python-chess seulement pour featur
 3. Features texte SAN + pendule (Polars). 4. Features échiquier (python-chess). 5. Séquences : n-grammes TF-IDF, puis réseau séquentiel.
 Comparer la MAE à chaque étape. Anti-fuite : pas d'Elo adverse ni RatingDiff en feature ; split train/test par joueur.
 
-## État actuel (étapes 1 et 3 faites ; prochain : notebook modèle = baseline + linéaire + HistGradientBoosting)
+## État actuel (étapes 1, 2, 3 faites ; prochain : simplifier les features, puis échiquier / n-grammes / evals)
 - On garde 180+0 et 180+2 (cadence = variable ; 180+2 ≈ 80 pts plus bas en moyenne).
 - Filtres partie : BOT, Abandoned/Rules infraction, < 20 demi-coups. Filtres joueur : |RatingDiff| > 15 (provisoire),
   pendule anormale (berserk = départ 90 s, temps ajouté = remontée > incrément).
@@ -52,3 +57,8 @@ Comparer la MAE à chaque étape. Anti-fuite : pas d'Elo adverse ni RatingDiff e
   Inutiles : pct_pions, pct_dame, n_promotions, t_finale. Cadence décale toute la pendule (180+2 : +1.2 s/coup ouverture).
   `fin` : mats chez les faibles, abandons/nulles chez les forts ; `fin = inconnu` = artefact du filtrage -> manquant.
   Max redondance |ρ| 0.79 (pct_longs/t_milieu). Métriques prévues : MAE (principale), R², MAE par tranche d'Elo.
+- Notebook 04 (test 205k lignes, 30k joueurs) : MAE médiane 283, linéaire 249 (R² 0.22), HGB 241 (R² 0.27).
+  Forte régression vers la moyenne (750 -> prédit ~1400, 2650 -> ~1950) : MAE ~120 au centre, 600-700 aux extrêmes.
+  Importance : cv_temps, pct_rapides, t_ouverture, premier_coup, temps_restant_fin, fin, pct_captures ; ~15 features < 1 pt.
+  Linéaire : retirer pct_pions (pct_* somment à ~1 -> colinéarité). Moyenner k parties : plateau ~207 dès k=5
+  -> biais, pas bruit : il faut des features de qualité des coups. Seuil 10 coups validé (gain vs médiane stable).
