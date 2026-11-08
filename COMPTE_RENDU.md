@@ -220,15 +220,3 @@ visualisation, dans [`par_personne/pl/`](par_personne/pl/)).*
   *smurf* (un joueur confirmé sur un compte au classement plus bas).
 - Ajouter d'autres jours de données et tester le modèle sur un jour qu'il n'a jamais vu.
 - Des features d'échiquier plus fines (structure de pions, sécurité du roi), ou des séquences de coups.
-
-## 8. Qui a fait quoi
-
-D'après l'historique Git (auteurs des commits) :
-
-| membre | branches | contributions principales |
-|---|---|---|
-| Yann | `Yann`, `main` | création du dépôt, lecture du PGN, première approche par joueur (aujourd'hui dans [`archives/`](archives/)) |
-| PL | `pl/data-cleaning`, `pl/notebook_04`, `board-visu` | nettoyage Elo moyen (notebook 01), features par partie (notebook 02), classes `Move` et `Chessboard`, heatmap et visualisation d'échiquier |
-| Syphax | `syphax`, `final/organisation` | notebook des modèles (notebook 03), fusion des branches et organisation du rendu |
-| Antoine | `antoine/cadrage-relecture`, `antoine/corrections-rendu` | cadrage du projet, script de récupération des données, nettoyage en script, README et compte rendu |
-| Julien | `Julien` | explorations dans [`par_personne/julien/`](par_personne/julien/) |
