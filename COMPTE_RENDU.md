@@ -221,3 +221,12 @@ visualisation, dans [`par_personne/pl/`](par_personne/pl/)).*
   *smurf* (un joueur confirmé sur un compte au classement plus bas).
 - Ajouter d'autres jours de données et tester le modèle sur un jour qu'il n'a jamais vu.
 - Des features d'échiquier plus fines (structure de pions, sécurité du roi), ou des séquences de coups.
+
+## 8. Utilisation de l'IA
+
+Une partie du travail a été réalisée avec l'assistant **Claude Code** (Anthropic), principalement :
+- pour la **réflexion sur le projet** : cadrage de la question, choix de la cible, discussion des décisions de nettoyage
+  et de modélisation ;
+- pour la **fusion des branches et la structuration de la version finale** du dépôt.
+
+Tout le travail produit avec cet outil a été **relu et corrigé par nous**.
