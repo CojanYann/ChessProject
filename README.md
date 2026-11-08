@@ -2,113 +2,108 @@
 
 Projet de data science (cours KIT DS, Télécom Paris) sur les parties publiques de [Lichess](https://database.lichess.org/).
 
-**Question** : en regardant seulement les coups joués et la gestion de la pendule, peut-on estimer le niveau (Elo)
-d'une partie de blitz ?
+## Objectif
 
-**Résultat** : sur le jeu de test (8 340 parties, joueurs jamais vus à l'entraînement), le meilleur modèle se trompe en
-moyenne de **212 points d'Elo**, contre 277 en prédisant toujours la médiane et 322 en prédisant 1500 pour tout le monde
-(le point de départ d'un nouveau compte sur Lichess).
+Les plateformes d'échecs calculent l'Elo (la note de niveau) uniquement à partir des résultats : un nouveau compte n'a donc
+pas de niveau fiable au départ. Nous cherchons à estimer le niveau d'une partie de blitz (l'**Elo moyen des deux joueurs**)
+à partir de la seule **façon de jouer** : les coups joués et le temps passé sur chaque coup.
 
----
+**Résultat** : sur 8 340 parties de test, jouées par des joueurs absents de l'entraînement, le meilleur modèle se trompe en
+moyenne de **212 points d'Elo** (MAE), contre 277 en prédisant toujours la médiane et 322 en prédisant 1 500 pour tout le
+monde, le point de départ d'un nouveau compte sur Lichess.
 
-## 1. Cadrage
+Pour la démarche détaillée, les choix et leur justification : **[COMPTE_RENDU.md](COMPTE_RENDU.md)**.
 
-Les plateformes d'échecs (Lichess, Chess.com) comme la FIDE estiment le niveau d'un joueur uniquement à partir de ses
-**résultats**. Un nouveau compte n'a donc pas de niveau fiable au départ (1500 pour tout le monde sur Lichess), et il faut
-de nombreuses parties avant que sa note se stabilise : en attendant, les appariements sont déséquilibrés.
+## Structure du dépôt
 
-Nous exploitons l'information que ces systèmes ignorent, **la façon de jouer**, pour estimer le niveau d'une partie
-(l'Elo moyen des deux joueurs). Le cadrage complet (contexte, métrique, critère de succès, limites, sources) est dans
-[`rendu_final/CADRAGE.md`](rendu_final/CADRAGE.md).
+| chemin | contenu |
+|---|---|
+| `rendu_final/prepare_raw.py` | étape 0 : télécharge le PGN et extrait les parties de blitz 3 min |
+| `src/elo/nettoyage_partie.py` | étape 1 : nettoyage, découpage train / valid / test, contrôles |
+| `rendu_final/01_nettoyage.ipynb` | étape 1 en notebook : l'audit qui justifie chaque seuil |
+| `rendu_final/02_features.ipynb` | étape 2 : construction et sélection des features (code dans `src/elo/features_partie.py`) |
+| `rendu_final/03_modeles.ipynb` | étape 3 : modèles, évaluation, analyse des erreurs |
+| `rendu_final/figures_compte_rendu.py` | figures du compte rendu (dans `figures/`) |
+| `rendu_final/CADRAGE.md`, `rendu_final/RECAP_dataset.md` | cadrage du projet, fiche du dataset nettoyé |
+| `src/elo/`, `src/utils/` | code réutilisé : lecture du PGN, nettoyage, features |
+| `archives/` | première approche abandonnée (prédire l'Elo de chaque joueur), voir [`archives/README.md`](archives/README.md) |
+| `par_personne/` | brouillons et explorations individuelles, dont la visualisation d'échiquier |
 
-**Métrique** : la MAE (erreur absolue moyenne, en points d'Elo), suivie de la RMSE et du R².
+## Installation
 
-## 2. Installation
-
-Python 3.14 et [uv](https://docs.astral.sh/uv/getting-started/installation/) :
+Python 3.14 et [uv](https://docs.astral.sh/uv/getting-started/installation/), depuis la racine du projet :
 
 ```bash
 uv sync
 ```
 
-Sans uv : `pip install -r requirements.txt` puis `pip install -e .` (le code de `src/` s'importe alors partout).
-Pour les notebooks, choisir le kernel du `.venv`.
+Sans uv : `pip install -r requirements.txt` puis `pip install -e .`. Pour les notebooks, choisir le kernel du `.venv`.
 
-## 3. Reproduire les résultats
+## Lancer le projet, dans l'ordre
 
-Les données (`Data/`) ne sont pas versionnées. Toutes les commandes se lancent depuis la racine du projet.
+Toutes les commandes se lancent depuis la racine. Les données vont dans `Data/`, qui n'est pas versionné.
 
-| étape | commande / fichier | entrée | sortie (`Data/`) |
+```bash
+uv run python rendu_final/prepare_raw.py
+```
+
+```bash
+uv run python -m elo.nettoyage_partie
+```
+
+Puis exécuter les notebooks `rendu_final/02_features.ipynb` et `rendu_final/03_modeles.ipynb`, et enfin :
+
+```bash
+uv run python rendu_final/figures_compte_rendu.py
+```
+
+| étape | durée indicative | sortie |
+|---|---|---|
+| 0. Données | 1 à 2 min, plus le téléchargement | `Data/blitz_180_raw_full.parquet` |
+| 1. Nettoyage (script ou notebook 01) | moins d'1 min | `Data/blitz_180_parties.parquet` |
+| 2. Features | plusieurs minutes (parties rejouées avec `python-chess`) | `Data/blitz_180_features_partie.parquet` |
+| 3. Modèles | quelques minutes | scores et graphiques dans le notebook |
+
+Le script de l'étape 0 télécharge le fichier complet (~28 Go) s'il est absent. Seul le début du fichier sert : les 2 millions
+de parties lues tiennent dans le premier 1,3 Go environ.
+
+## Données
+
+- **Source** : toutes les parties classées Lichess de septembre 2026, au format PGN (en-têtes puis liste des coups, avec le
+  temps restant à la pendule après chaque coup).
+- **Extraction** : les 2 millions premières parties (1er septembre, de 0 h à 16 h UTC), limitées au blitz 3 minutes
+  (180+0 et 180+2) : **557 237 parties**.
+- **Après nettoyage** : **196 124 parties**, une ligne par partie, découpées **par joueur** en train (179 356), valid (8 428)
+  et test (8 340), pour qu'aucun joueur n'apparaisse dans deux groupes.
+- **Cible** : `elo_moyen`, la moyenne des Elo des deux joueurs. Les Elo, le résultat de la partie et les évaluations par
+  ordinateur ne sont jamais utilisés comme variables explicatives.
+
+![Entonnoir de nettoyage](figures/cr_entonnoir.png)
+
+## Résultats clés
+
+| modèle | MAE valid | MAE test | R² test |
 |---|---|---|---|
-| 0. Données | `uv run python rendu_final/prepare_raw.py` | PGN Lichess de sept. 2026 (téléchargé s'il manque, ~28 Go) | `blitz_180_raw_full.parquet` : 557 237 parties |
-| 1. Nettoyage | `uv run python -m elo.nettoyage_partie` (code dans `src/elo/nettoyage_partie.py`) ; l'audit qui justifie chaque seuil est dans `rendu_final/01_nettoyage.ipynb` | parquet brut | `blitz_180_parties.parquet` : 196 124 parties |
-| 2. Features | `rendu_final/02_features.ipynb` (code dans `src/elo/features.py` et `src/elo/features_partie.py`) | parties propres | `blitz_180_features_partie.parquet` |
-| 3. Modèles | `rendu_final/03_modeles.ipynb` | features | scores et graphiques |
-
-`prepare_raw.py` lit le PGN en streaming et par morceaux de 100 000 parties, pour ne pas saturer la RAM.
-
-## 4. Démarche et choix
-
-### Données
-Les 2 millions premières parties classées de septembre 2026 (environ 16 h de jeu, le 1er septembre), limitées au
-**blitz 3 minutes** (180+0 et 180+2) : l'Elo Lichess est propre à chaque cadence, et la pendule n'est comparable qu'à temps égal.
-
-### Nettoyage (`01_nettoyage`)
-Chaque anomalie est d'abord **mesurée** (sections 3 à 7, aucune ligne retirée), puis traitée avec un seuil justifié par les données.
-
-| décision | pourquoi |
-|---|---|
-| retirer les BOT, les parties abandonnées ou en infraction, celles de moins de 20 demi-coups | coups non représentatifs d'un humain |
-| retirer les pendules anormales (berserk, temps ajouté) | gestion du temps non comparable |
-| écart d'Elo entre les joueurs ≤ 200 | au-delà, l'Elo moyen ne décrit le niveau d'aucun des deux joueurs |
-| \|RatingDiff\| ≤ 9 pour les deux joueurs | au-delà, l'Elo est encore provisoire (compte récent) |
-| au plus 20 parties par joueur, doublons exacts retirés | éviter qu'une poignée de joueurs très actifs domine les données |
-| annotations `?!`, `??` retirées des coups, `%eval` non utilisé | elles n'existent que dans les parties analysées, surtout chez les joueurs forts : fuite d'information |
-| split train / valid / test (70 / 15 / 15) **par joueur** | un joueur garde le même Elo et le même style toute la journée : sans cela, le modèle reconnaîtrait le joueur au lieu d'estimer son niveau |
-
-Le split par joueur a un coût : seules les parties dont les deux joueurs tombent dans le même groupe sont gardées
-(170 806 parties écartées). Douze contrôles automatiques vérifient la table finale (clés uniques, pas de joueur dans deux
-groupes, parties légales rejouées avec `python-chess`…). Détail dans [`rendu_final/RECAP_dataset.md`](rendu_final/RECAP_dataset.md).
-
-### Features (`02_features`)
-Calculées uniquement à partir des coups et de la pendule (jamais l'Elo, le résultat ou `RatingDiff`), pour chaque couleur
-puis moyennées sur la partie. Cinq familles : **pendule**, **coups** (captures, échecs, roque…), **ouverture**
-(profondeur de théorie), **matériel** (partie rejouée avec `python-chess`) et **partie** (longueur, cadence).
-Toute l'analyse (corrélations, redondance, sélection) est faite sur le train ; le test n'est pas ouvert.
-
-### Modèles (`03_modeles`)
-Deux références (1500 pour tout le monde, médiane du train), une régression Ridge et un HistGradientBoosting.
-Le modèle est choisi sur le valid ; le test n'est utilisé **qu'une seule fois**, à la fin.
-
-## 5. Résultats
-
-| modèle | MAE valid (IC 95 %) | MAE test | R² test |
-|---|---|---|---|
-| 1500 pour tout le monde | 313,3 | 322,4 | −0,30 |
+| 1 500 pour tout le monde | 313,3 | 322,4 | −0,30 |
 | médiane du train | 271,9 | 276,6 | 0,00 |
-| Ridge | 224,7 (221,2 – 228,2) | | |
-| **HistGradientBoosting** | **213,5** (209,9 – 217,1) | **212,2** | **0,40** |
+| Ridge (régression linéaire) | 224,7 | | |
+| **HistGradientBoosting** | **213,5** | **212,2** | **0,40** |
 
-- Le boosting gagne **64 points** sur la médiane et **110 points** sur « 1500 pour tout le monde ».
-- La MAE du test est très proche de celle du valid : pas de sur-ajustement au valid.
-- L'erreur dépend fortement du niveau : environ 130 points vers 1600, mais 450 vers 800 et 530 vers 2400.
-  Le modèle ramène ses prédictions vers le centre (régression vers la moyenne) : une seule partie ne suffit pas à
-  reconnaître avec certitude un joueur très faible ou très fort.
-- Les features les plus utiles : la part de coups rapides, la réponse des Noirs à l'ouverture, la régularité du temps de
-  réflexion, le déséquilibre de matériel et la profondeur de théorie.
+*Source : notebook 03. Le modèle est choisi sur le valid ; le test n'est utilisé qu'une fois, à la fin.*
 
-## 6. Limites et pistes
+![MAE par famille de features](figures/cr_mae_familles.png)
 
-- **Une seule journée** de blitz 3 minutes, et une population filtrée (pas de comptes provisoires, peu de tournois).
-- **Pas de mesure directe de la qualité des coups** (pas de moteur d'échecs) : le matériel n'en est qu'une approximation.
-- Pistes : estimer le niveau d'un **joueur** sur plusieurs parties (utile pour repérer un compte mal classé ou un smurf),
-  ajouter d'autres jours de données, des features d'échiquier plus fines.
+Les features de **pendule** sont les plus informatives, mais chaque famille apporte quelque chose : ensemble, elles gagnent
+58 points sur la médiane.
 
-## 7. Organisation du dépôt
+![Erreur par tranche d'Elo](figures/cr_mae_par_tranche.png)
 
-| dossier | contenu |
-|---|---|
-| `rendu_final/` | **le rendu** : script de données, les 3 notebooks, cadrage et fiche du dataset |
-| `src/elo/`, `src/utils/` | code du rendu : lecture du PGN, nettoyage, calcul des features |
-| `archives/` | première approche (prédire l'Elo d'un joueur, 1 ligne par joueur et par partie), abandonnée : voir [`archives/README.md`](archives/README.md) |
-| `par_personne/` | brouillons et explorations individuelles |
+L'erreur est faible au milieu (environ 130 points vers 1 600) et forte aux extrêmes (450 vers 800, 530 vers 2 400) : le
+modèle ramène ses prédictions vers la moyenne.
+
+## Limites
+
+- Une seule journée de blitz 3 minutes, et une population filtrée (pas de comptes provisoires, peu de tournois).
+- Pas de mesure directe de la qualité des coups : sans moteur d'échecs, le matériel perdu n'en est qu'une approximation.
+- Valid et test petits (environ 8 400 parties chacun), conséquence du découpage par joueur.
+- Une seule partie est un indice bruité du niveau : les joueurs très faibles ou très forts restent mal estimés.
