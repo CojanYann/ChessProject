@@ -12,8 +12,4 @@ wheels/
 Data/
 notebookyann/
 lichess_db_standard_rated_2026-09.pgn.zst
-pyproject.toml
-uv.lock
 .vscode/tasks.json
-pyproject.toml
-uv.lock
