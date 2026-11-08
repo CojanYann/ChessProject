@@ -3,31 +3,40 @@
 ### Contexte
 Les plateformes d'échecs en ligne (Lichess, Chess.com) comme la fédération internationale (FIDE) estiment le niveau d'un joueur uniquement à partir de ses **résultats** (victoire, nulle, défaite), via les systèmes Elo ou Glicko. La qualité du jeu n'entre jamais dans le calcul.
 
-### Problème
 Un nouveau joueur n'a donc pas de niveau fiable au départ :
 - **Lichess** fait démarrer tout le monde à 1500, avec une note marquée provisoire ;
 - **Chess.com** s'appuie sur le niveau déclaré par le joueur à l'inscription ;
 - **la FIDE** attend au moins 5 parties officielles avant de publier une première note.
 
-Il faut ensuite de nombreuses parties pour que la note se stabilise. En attendant, les appariements sont déséquilibrés : un débutant affronte des joueurs trop forts, un joueur confirmé écrase des débutants, ce qui dégrade l'expérience des deux.
+### Problème
+L'Elo affiché ne reflète pas toujours le vrai niveau d'un joueur, dans deux situations :
+- **les nouveaux comptes** : ils démarrent tous au même niveau, et il faut de nombreuses parties pour que leur note se stabilise ;
+- **les smurfs** : des joueurs confirmés qui jouent sur un compte au classement plus bas que leur vrai niveau.
+
+Dans les deux cas, les appariements sont déséquilibrés : des joueurs plus faibles affrontent des adversaires bien trop forts pour eux, ce qui dégrade leur expérience.
 
 ### Notre proposition
-Exploiter une information que ces systèmes ignorent : **la façon de jouer** (coups joués, gestion de la pendule). Nous estimons le niveau d'une partie (l'Elo moyen des deux joueurs) à partir de ces seules données. Le modèle est entraîné sur des joueurs dont l'Elo est stable (les comptes provisoires sont exclus lors du nettoyage, via |RatingDiff| ≤ 9), pour pouvoir ensuite estimer le niveau de joueurs dont l'Elo ne l'est pas encore.
+Exploiter l'information que les systèmes de classement ignorent : **la façon de jouer** (coups joués, gestion de la pendule). Nous estimons l'Elo d'un joueur à partir de **ses seuls coups et de sa pendule** dans une partie, sans utiliser ni l'Elo de l'adversaire, ni ses coups, ni le résultat de la partie.
+
+Comparer ce niveau estimé à l'Elo affiché permet de signaler les joueurs dont la note semble décalée : un écart important et répété sur plusieurs parties peut indiquer un compte encore mal classé ou un smurf.
+
+Le modèle est entraîné sur des joueurs dont l'Elo est stable : les comptes provisoires sont exclus lors du nettoyage, à partir de la variation de note après la partie (`RatingDiff`).
 
 ### Métrique
 La **MAE** (erreur absolue moyenne, en points d'Elo) : elle se lit directement (« en moyenne, on se trompe de X points »). La RMSE est suivie en parallèle : un écart important entre les deux signale des erreurs ponctuelles très fortes, typiquement sur les niveaux extrêmes.
 
 ### Critère de succès
-Le modèle doit faire mieux que deux références simples :
-1. **prédire 1500 pour tout le monde** (ce que fait Lichess pour un nouveau compte) : MAE ≈ 322 sur le test ;
-2. **prédire toujours la médiane** du jeu d'entraînement : MAE ≈ 277 sur le test.
+Le modèle doit faire mieux que deux références simples, sur des joueurs absents de l'entraînement :
+1. **prédire 1500 pour tout le monde** (le point de départ de Lichess pour un nouveau compte) ;
+2. **prédire toujours la médiane** du jeu d'entraînement.
 
 ### Limites du cadrage
-- Nous prédisons le niveau d'une **partie**, pas d'un joueur seul ; pour un nouveau compte, prédire son niveau individuel serait l'étape suivante.
+- Il n'existe pas d'étiquette « smurf » dans les données : la détection est une application du modèle, pas un résultat que nous pouvons mesurer directement. La performance est évaluée sur la prédiction de l'Elo.
+- Une seule partie est un indice bruité du niveau : une détection fiable suppose d'agréger plusieurs parties d'un même joueur.
 - Les données couvrent **une seule journée** de Lichess en blitz 3 minutes.
 
 ### Perspective
-Le même principe (comparer le niveau estimé à l'Elo affiché) pourrait aider à repérer des parties anormales : triche par ordinateur, comptes partagés.
+Le même principe (comparer le niveau estimé à l'Elo affiché) pourrait aider à repérer d'autres parties anormales, comme la triche par ordinateur ou les comptes partagés.
 
 ### Sources
 - Lichess, systèmes de classement : https://lichess.org/page/rating-systems
