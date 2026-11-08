@@ -1,8 +1,9 @@
 # Compte rendu : estimer le niveau d'une partie d'échecs à partir de la façon de jouer
 
-Ce document présente le projet à un lecteur qui ne l'a pas suivi : la question posée, les données, chaque décision de
-nettoyage, les variables construites, les modèles et leurs limites. Chaque section renvoie vers le notebook qui détaille
-le calcul. Pour installer et lancer le projet, voir le [README](README.md).
+Ce document a pour but de vous présenter notre projet. Nous y exposons la question que nous nous sommes posée, les
+données utilisées, chacune de nos décisions de nettoyage, les variables construites, les modèles retenus ainsi que leurs
+limites. Chaque section renvoie vers le notebook qui détaille les calculs correspondants. Les instructions d'installation
+et d'exécution figurent dans le [README](README.md).
 
 **Origine des chiffres.** Tous les chiffres cités viennent d'une exécution réelle : les sorties enregistrées des notebooks
 de [`rendu_final/`](rendu_final/), confirmées par une ré-exécution complète (téléchargement, nettoyage, features, modèles)
