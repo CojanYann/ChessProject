@@ -41,7 +41,7 @@ Les données (`Data/`) ne sont pas versionnées. Toutes les commandes se lancent
 | étape | commande / fichier | entrée | sortie (`Data/`) |
 |---|---|---|---|
 | 0. Données | `uv run python rendu_final/prepare_raw.py` | PGN Lichess de sept. 2026 (téléchargé s'il manque, ~28 Go) | `blitz_180_raw_full.parquet` : 557 237 parties |
-| 1. Nettoyage | `rendu_final/01_nettoyage.ipynb` | parquet brut | `blitz_180_parties.parquet` : 196 124 parties |
+| 1. Nettoyage | `uv run python -m elo.nettoyage_partie` (code dans `src/elo/nettoyage_partie.py`) ; l'audit qui justifie chaque seuil est dans `rendu_final/01_nettoyage.ipynb` | parquet brut | `blitz_180_parties.parquet` : 196 124 parties |
 | 2. Features | `rendu_final/02_features.ipynb` (code dans `src/elo/features.py` et `src/elo/features_partie.py`) | parties propres | `blitz_180_features_partie.parquet` |
 | 3. Modèles | `rendu_final/03_modeles.ipynb` | features | scores et graphiques |
 
@@ -109,6 +109,6 @@ Le modèle est choisi sur le valid ; le test n'est utilisé **qu'une seule fois*
 | dossier | contenu |
 |---|---|
 | `rendu_final/` | **le rendu** : script de données, les 3 notebooks, cadrage et fiche du dataset |
-| `src/elo/`, `src/utils/` | code réutilisé par le rendu (lecture du PGN, calcul des features) |
+| `src/elo/`, `src/utils/` | code du rendu : lecture du PGN, nettoyage, calcul des features |
 | `archives/` | première approche (prédire l'Elo d'un joueur, 1 ligne par joueur et par partie), abandonnée : voir [`archives/README.md`](archives/README.md) |
 | `par_personne/` | brouillons et explorations individuelles |
