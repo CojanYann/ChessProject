@@ -37,6 +37,13 @@ Projet installé en éditable (`[build-system]` setuptools, `uv sync`). Pipeline
 - `src/utils/` : `pgn.py` (download_pgn, open_pgn, read_games, parse_moves), `Move.py` + `chessboard.py` (collègue).
 - Notebooks 00-04 = analyse détaillée ; 03 et 04 importent `elo.features` / `elo.modeles` ; 01 garde son code
   pas à pas (miroir de `nettoyage.py`). Notebooks générés via scripts dans le scratchpad (ne pas régénérer à l'aveugle).
+- `notebooks/03_nettoyage_elo_moyen.ipynb` : audit + dataset ML **1 ligne/partie**, cible `elo_moyen` = (EloB+EloN)/2.
+  Lit `Data/blitz_180_raw_full.parquet` (2M parties, 557k en 180+0/180+2 ; 00h-16h UTC du 1er sept.), écrit
+  `Data/blitz_180_parties.parquet` (196k parties) : `game_id, blanc, noir, split, elo_moyen, cadence, eco, n_moves, san, clk`.
+  Décisions chiffrées : glyphes `?!` retirés des SAN (fuite : présents seulement dans les parties analysées), `%eval` non utilisé,
+  écart d'Elo ≤ 200 (tournois = gros écarts), |RatingDiff| ≤ 9 (au-delà l'Elo moyen -> 1500), départ pendule = 180 s,
+  ≤ 20 parties/joueur, doublons de parties retirés, split 70/15/15 **par joueur** (parties croisées écartées).
+  Contrôles auto (12) dans le notebook ; baseline médiane MAE ≈ 280.
 
 ## Stratégie (feuille de route)
 Polars pour tout le tabulaire/texte/pendule ; python-chess seulement pour features d'échiquier, sur données déjà filtrées.
