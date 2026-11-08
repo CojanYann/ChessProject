@@ -1,4 +1,4 @@
-"""Features par partie (Blancs + Noirs) pour la table `blitz_180_parties` (notebook 03_nettoyage_elo_moyen).
+"""Features par partie (Blancs + Noirs) pour la table `blitz_180_parties` (rendu_final/01_nettoyage.ipynb).
 
 Tout est calculé uniquement à partir des coups (`san`) et de la pendule (`clk`) : aucune information de résultat ou d'Elo.
 - pendule / coups : on réutilise `elo.features` (dicts d'expressions par joueur), appliqué aux Blancs puis aux Noirs ;

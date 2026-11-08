@@ -3,7 +3,7 @@
 **Objectif** : construire un dataset fiable et prêt pour le ML afin de prédire `elo_moyen = (EloBlancs + EloNoirs) / 2`
 à partir des coups (SAN) et de la pendule, sur les parties Blitz 3 min de Lichess (septembre 2026).
 
-Tout le détail (code, tableaux, graphiques) est dans [notebooks/03_nettoyage_elo_moyen.ipynb](notebooks/03_nettoyage_elo_moyen.ipynb).
+Tout le détail (code, tableaux, graphiques) est dans [01_nettoyage.ipynb](01_nettoyage.ipynb).
 Ce fichier en résume la démarche et les résultats.
 
 ---
@@ -12,23 +12,23 @@ Ce fichier en résume la démarche et les résultats.
 
 | Fichier | Statut | Rôle |
 |---|---|---|
-| [notebooks/03_nettoyage_elo_moyen.ipynb](notebooks/03_nettoyage_elo_moyen.ipynb) | nouveau | audit + nettoyage + split + contrôles + fiche du dataset |
+| [01_nettoyage.ipynb](01_nettoyage.ipynb) | nouveau | audit + nettoyage + split + contrôles + fiche du dataset |
 | `Data/blitz_180_raw_full.parquet` | généré (non versionné) | 2M premières parties du PGN, filtrées 180+0 / 180+2 : **557 237 parties** |
 | `Data/blitz_180_parties.parquet` | généré (non versionné) | **dataset final : 196 124 parties**, 1 ligne par partie |
 | [CLAUDE.md](CLAUDE.md) | modifié | ajout du notebook 03 et de ses décisions dans les notes du projet |
 | `RECAP_dataset.md` | nouveau | ce fichier |
 
 Les fichiers de `Data/` sont ignorés par git. Le fichier `Data/blitz_180_raw.parquet` existant (2 883 parties seulement, très
-inférieur aux 557k décrits dans les notes) n'a **pas** été modifié ; le notebook 03 régénère son propre cache depuis le PGN
+inférieur aux 557k décrits dans les notes) n'a **pas** été modifié ; le notebook 01_nettoyage régénère son propre cache depuis le PGN
 s'il est absent (~1 min).
 
 ---
 
 ## 2. Démarche
 
-1. **Lecture du dépôt** : notebooks 01 (1 ligne/joueur, exploration) et 02 (choix de cadence), `src/utils/pgn.py`, notes du projet
+1. **Lecture du dépôt** : notebooks 01 (1 ligne/joueur, exploration) et 02 (choix de cadence) de l'ancienne approche (archives/), `src/utils/pgn.py`, notes du projet
    (Polars uniquement, pas de Stockfish, notebooks simples, split par joueur, anti-fuite).
-2. **Première version** du notebook 03 : nettoyage simple (mêmes filtres que le notebook 01, 1 ligne/partie). Jugée insuffisante.
+2. **Première version** du notebook 01_nettoyage : nettoyage simple (mêmes filtres que l'ancien notebook 01, 1 ligne/partie). Jugée insuffisante.
 3. **Exploration approfondie des 557k parties** avant d'écrire le notebook final : chaque anomalie a été mesurée, et le notebook
    n'applique de seuil que lorsque les données le justifient.
 4. **Notebook final** : sections 3 à 7 = audit (aucune ligne retirée), section 8 = application de tous les filtres,

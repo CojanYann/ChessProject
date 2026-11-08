@@ -1,4 +1,4 @@
-"""Étape 3 : features par joueur-partie, calculées avec Polars à partir de `blitz_180_joueurs` (détails : notebook 03).
+"""Étape 3 : features par joueur-partie, calculées avec Polars à partir de `blitz_180_joueurs` (détails : archives/03_features.ipynb).
 Uniquement les coups du joueur (`san`, `clk`) car les coups adverses renseignent sur le niveau adverse (fuite)."""
 
 import polars as pl
