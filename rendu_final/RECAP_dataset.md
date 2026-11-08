@@ -15,12 +15,10 @@ Ce fichier en résume la démarche et les résultats.
 | [01_nettoyage.ipynb](01_nettoyage.ipynb) | nouveau | audit + nettoyage + split + contrôles + fiche du dataset |
 | `Data/blitz_180_raw_full.parquet` | généré (non versionné) | 2M premières parties du PGN, filtrées 180+0 / 180+2 : **557 237 parties** |
 | `Data/blitz_180_parties.parquet` | généré (non versionné) | **dataset final : 196 124 parties**, 1 ligne par partie |
-| [CLAUDE.md](CLAUDE.md) | modifié | ajout du notebook 03 et de ses décisions dans les notes du projet |
 | `RECAP_dataset.md` | nouveau | ce fichier |
 
-Les fichiers de `Data/` sont ignorés par git. Le fichier `Data/blitz_180_raw.parquet` existant (2 883 parties seulement, très
-inférieur aux 557k décrits dans les notes) n'a **pas** été modifié ; le notebook 01_nettoyage régénère son propre cache depuis le PGN
-s'il est absent (~1 min).
+Les fichiers de `Data/` sont ignorés par git. Le fichier brut `Data/blitz_180_raw_full.parquet` est créé avant le notebook par
+`uv run python rendu_final/prepare_raw.py` (depuis la racine) : le script lit le PGN par morceaux et garde le texte brut des coups.
 
 ---
 
