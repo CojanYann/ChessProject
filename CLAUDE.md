@@ -1,6 +1,6 @@
 # ChessProject — prédire l'Elo à partir des coups
 
-Projet ML (cours KIT DS, Télécom Paris). Cible : Elo de chaque joueur (1 ligne par joueur et par partie).
+Projet ML (cours KIT DS, Télécom Paris). Cible : Elo moyen de la partie (1 ligne par partie), rendu dans `rendu_final/`. L'ancienne approche (Elo de chaque joueur) est dans `archives/`.
 
 ## Priorité n°1 : que les étudiants comprennent et apprennent
 Le plus important est que les étudiants du projet **comprennent** ce qui est fait et **apprennent**, bien avant la
